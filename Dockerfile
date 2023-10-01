@@ -1,15 +1,32 @@
-FROM python:3.10
+FROM python:3.8
 
-WORKDIR /usr/src/app
-ENV PYTHONDONTWRITEBYTECODE 1
+WORKDIR /b1_words
 
-RUN apt-get update \
-    && apt-get install netcat -y
-RUN apt-get upgrade -y && apt-get install postgresql gcc python3-dev musl-dev -y
-RUN pip install --upgrade pip
-COPY ./req.txt .
+COPY req.txt .
+
 RUN pip install -r req.txt
 
 
+COPY . .
+RUN groupadd app    # Создание группы
+RUN useradd -m -g app app -p PASSWORD   # Добавляем пользователя с паролем Password
+RUN usermod -aG app app # Добавляем в группу
+
+# Создание переменных
+ENV HOME=/home/app
+ENV APP_HOME=/home/app/web
+RUN mkdir $APP_HOME
+
+WORKDIR $APP_HOME
+
+
+
+COPY . $APP_HOME
+
+
+
+RUN chown -R app:app $APP_HOME
+USER app
 # Запускаем бота
+
 CMD ["python", "main.py"]
